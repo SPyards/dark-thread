@@ -1,0 +1,2845 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUPUS - Premium Dark Fashion</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    
+    <style>
+        :root {
+            /* Dark mode variables (default) */
+            --bg-primary: #0a0a0a;
+            --bg-secondary: #111;
+            --bg-tertiary: #1a1a1a;
+            --bg-nav: #000;
+            --text-primary: #ffffff;
+            --text-secondary: #ccc;
+            --text-tertiary: #888;
+            --accent-primary: #d4af37;
+            --accent-secondary: #b8941f;
+            --border-primary: #333;
+            --border-secondary: #222;
+            --error-color: #ff4757;
+            --success-color: #2ed573;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --overlay: rgba(0, 0, 0, 0.9);
+        }
+
+        [data-theme="light"] {
+            /* Light mode variables */
+            --bg-primary: #f8f9fa;
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e9ecef;
+            --bg-nav: #ffffff;
+            --text-primary: #212529;
+            --text-secondary: #495057;
+            --text-tertiary: #6c757d;
+            --accent-primary: #d4af37;
+            --accent-secondary: #b8941f;
+            --border-primary: #dee2e6;
+            --border-secondary: #e9ecef;
+            --error-color: #dc3545;
+            --success-color: #28a745;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --overlay: rgba(255, 255, 255, 0.95);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background-color: var(--accent-primary);
+            border: none;
+            border-radius: 50px;
+            width: 60px;
+            height: 60px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px var(--shadow);
+            z-index: 1001;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .theme-toggle:hover {
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 6px 30px var(--shadow);
+        }
+
+        .theme-toggle.light-mode {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+        }
+
+        .theme-toggle.dark-mode {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+        }
+
+        /* Navigation */
+        .navbar {
+            background-color: var(--bg-nav);
+            padding: 0.8rem 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-secondary);
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-primary);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            display: none;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-email {
+            color: var(--accent-primary);
+            font-size: 0.9rem;
+        }
+
+        .logout-btn {
+            background-color: transparent;
+            color: var(--accent-primary);
+            border: 1px solid var(--accent-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .auth-btn-nav {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .auth-btn-nav:hover {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .cart-wishlist {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .cart-btn, .wishlist-btn {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+            padding: 0.6rem 1.2rem;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .cart-btn:hover, .wishlist-btn:hover {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Auth Pages - Sliding Container */
+        .auth-page {
+            display: none;
+            min-height: 100vh;
+            padding-top: 80px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .auth-page.active {
+            display: flex;
+        }
+
+        .auth-container {
+            background-color: var(--bg-secondary);
+            border-radius: 8px;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid var(--border-primary);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 40px var(--shadow);
+        }
+
+        .auth-toggle-header {
+            display: flex;
+            background-color: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .auth-toggle-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            padding: 1rem;
+            cursor: pointer;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .auth-toggle-btn.active {
+            color: var(--accent-primary);
+            background-color: var(--bg-secondary);
+        }
+
+        .auth-toggle-btn::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--accent-primary);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .auth-toggle-btn.active::after {
+            transform: scaleX(1);
+        }
+
+        .auth-forms-container {
+            position: relative;
+            height: 500px;
+            overflow: hidden;
+        }
+
+        .auth-form-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 3rem;
+            transition: transform 0.4s ease;
+        }
+
+        .auth-form-wrapper.login-form {
+            transform: translateX(0);
+        }
+
+        .auth-form-wrapper.register-form {
+            transform: translateX(100%);
+        }
+
+        .auth-form-wrapper.forgot-form {
+            transform: translateX(200%);
+        }
+
+        /* When showing register */
+        .auth-forms-container.show-register .login-form {
+            transform: translateX(-100%);
+        }
+
+        .auth-forms-container.show-register .register-form {
+            transform: translateX(0);
+        }
+
+        .auth-forms-container.show-register .forgot-form {
+            transform: translateX(100%);
+        }
+
+        /* When showing forgot password */
+        .auth-forms-container.show-forgot .login-form {
+            transform: translateX(-200%);
+        }
+
+        .auth-forms-container.show-forgot .register-form {
+            transform: translateX(-100%);
+        }
+
+        .auth-forms-container.show-forgot .forgot-form {
+            transform: translateX(0);
+        }
+
+        .auth-title {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--accent-primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background-color: var(--bg-secondary);
+        }
+
+        .auth-btn {
+            width: 100%;
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border: none;
+            padding: 1rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .auth-btn:hover {
+            background-color: var(--accent-secondary);
+            transform: translateY(-2px);
+        }
+
+        .auth-btn:disabled {
+            background-color: var(--text-tertiary);
+            color: var(--text-secondary);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-links {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .auth-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .auth-link:hover {
+            text-decoration: underline;
+            color: var(--accent-secondary);
+        }
+
+        .error-message {
+            background-color: var(--error-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        .success-message {
+            background-color: var(--success-color);
+            color: white;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            margin-top: 80px;
+            min-height: 80vh;
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-primary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            z-index: 2;
+        }
+
+        .hero-title {
+            font-size: 4.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, var(--text-primary), var(--accent-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .hero-cta {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            padding: 1rem 2.5rem;
+            border: none;
+            border-radius: 2px;
+            font-size: 1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .hero-cta:hover {
+            background-color: var(--accent-secondary);
+            transform: translateY(-2px);
+        }
+
+        /* Bestsellers Section */
+        .bestsellers-section {
+            padding: 5rem 0;
+            background-color: var(--bg-primary);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-primary);
+        }
+
+        .view-all-btn {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+            padding: 0.8rem 1.5rem;
+            border-radius: 2px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .view-all-btn:hover {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+        }
+
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .product-card {
+            background-color: var(--bg-secondary);
+            border-radius: 0;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            border: 1px solid var(--border-secondary);
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--border-primary);
+            box-shadow: 0 8px 40px var(--shadow);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 400px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(212,175,55,0.1) 100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover .product-image::after {
+            opacity: 1;
+        }
+
+        .wishlist-heart {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: var(--overlay);
+            border: none;
+            color: var(--text-primary);
+            font-size: 1.2rem;
+            padding: 0.6rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .wishlist-heart:hover,
+        .wishlist-heart.active {
+            color: var(--accent-primary);
+            background-color: var(--bg-secondary);
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .product-price {
+            font-size: 1.3rem;
+            color: var(--accent-primary);
+            font-weight: 900;
+            margin-bottom: 1rem;
+        }
+
+        .add-to-cart {
+            width: 100%;
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+            padding: 0.8rem;
+            border-radius: 2px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .add-to-cart:hover {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .add-to-cart:disabled {
+            background-color: var(--border-primary);
+            color: var(--text-tertiary);
+            cursor: not-allowed;
+            border-color: var(--border-primary);
+        }
+
+        /* Auth Required Message */
+        .auth-required {
+            background-color: var(--border-primary);
+            color: var(--accent-primary);
+            padding: 1rem;
+            border-radius: 4px;
+            text-align: center;
+            margin: 2rem 0;
+            border: 1px solid var(--accent-primary);
+        }
+
+        .auth-required a {
+            color: var(--accent-primary);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            background-color: var(--bg-secondary);
+            padding: 4rem 0;
+            text-align: center;
+        }
+
+        .stats-content {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .stats-number {
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+
+        .stats-text {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Feature Section */
+        .feature-section {
+            padding: 5rem 0;
+            background-color: var(--bg-primary);
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .feature-content h2 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+            color: var(--accent-primary);
+        }
+
+        .feature-content p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .feature-images {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .feature-image {
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .feature-label {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            background-color: var(--overlay);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 2px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Testimonials */
+        .testimonials-section {
+            background-color: var(--bg-secondary);
+            padding: 4rem 0;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .testimonial {
+            background-color: var(--bg-tertiary);
+            padding: 2rem;
+            border-left: 3px solid var(--accent-primary);
+            border-radius: 4px;
+        }
+
+        .testimonial-text {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        /* Page Content */
+        .page {
+            display: none;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* About Us & Contact Pages */
+        .page-hero {
+            background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-primary) 100%);
+            padding: 5rem 0;
+            text-align: center;
+        }
+
+        .page-hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 1rem;
+            color: var(--accent-primary);
+        }
+
+        .page-hero p {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .page-content {
+            padding: 5rem 0;
+            background-color: var(--bg-primary);
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: start;
+        }
+
+        .content-section {
+            background-color: var(--bg-secondary);
+            padding: 3rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-primary);
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .content-section h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+            color: var(--accent-primary);
+        }
+
+        .content-section p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+
+        .content-section ul {
+            list-style: none;
+            margin-top: 2rem;
+        }
+
+        .content-section li {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .content-section li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent-primary);
+            font-weight: bold;
+        }
+
+        /* Contact Form */
+        .contact-form {
+            background-color: var(--bg-secondary);
+            padding: 3rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-primary);
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .contact-form h2 {
+            font-size: 2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 2rem;
+            color: var(--accent-primary);
+            text-align: center;
+        }
+
+        .contact-form .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .contact-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .contact-form input,
+        .contact-form textarea {
+            width: 100%;
+            padding: 1rem;
+            background-color: var(--bg-tertiary);
+            border: 1px solid var(--border-primary);
+            border-radius: 4px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .contact-form textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .contact-form input:focus,
+        .contact-form textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            background-color: var(--bg-secondary);
+        }
+
+        .contact-form .submit-btn {
+            width: 100%;
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border: none;
+            padding: 1.2rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .contact-form .submit-btn:hover {
+            background-color: var(--accent-secondary);
+            transform: translateY(-2px);
+        }
+
+        /* Product Detail Page */
+        .product-detail {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            margin: 3rem 0;
+        }
+
+        .product-detail-image {
+            width: 100%;
+            height: 600px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 4px;
+        }
+
+        .product-detail-info {
+            padding: 2rem 0;
+        }
+
+        .product-detail-info h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 900;
+        }
+
+        .product-detail-info .price {
+            font-size: 2.2rem;
+            color: var(--accent-primary);
+            font-weight: 900;
+            margin-bottom: 2rem;
+        }
+
+        .product-description {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .size-selector {
+            margin-bottom: 2rem;
+        }
+
+        .size-selector h3 {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .size-options {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .size-option {
+            padding: 0.8rem 1.2rem;
+            border: 1px solid var(--border-primary);
+            background-color: transparent;
+            color: var(--text-primary);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .size-option:hover,
+        .size-option.selected {
+            border-color: var(--accent-primary);
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+        }
+
+        .detail-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .detail-add-to-cart {
+            flex: 1;
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border: none;
+            padding: 1.2rem;
+            border-radius: 2px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .detail-add-to-cart:hover {
+            background-color: var(--accent-secondary);
+        }
+
+        .detail-add-to-cart:disabled {
+            background-color: var(--border-primary);
+            color: var(--text-tertiary);
+            cursor: not-allowed;
+        }
+
+        .detail-wishlist {
+            background-color: transparent;
+            border: 1px solid var(--border-primary);
+            color: var(--text-primary);
+            padding: 1.2rem;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .detail-wishlist:hover,
+        .detail-wishlist.active {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .detail-wishlist:disabled {
+            background-color: var(--border-primary);
+            color: var(--text-tertiary);
+            cursor: not-allowed;
+            border-color: var(--border-primary);
+        }
+
+        .back-btn {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+            padding: 0.8rem 1.5rem;
+            border-radius: 2px;
+            cursor: pointer;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .back-btn:hover {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+        }
+
+        /* Cart Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--overlay);
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background-color: var(--bg-secondary);
+            margin: 3% auto;
+            padding: 2rem;
+            border-radius: 4px;
+            width: 90%;
+            max-width: 700px;
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-primary);
+            box-shadow: 0 10px 40px var(--shadow);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-primary);
+        }
+
+        .modal-header h2 {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 900;
+            color: var(--text-primary);
+        }
+
+        .close {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close:hover {
+            color: var(--accent-primary);
+        }
+
+        .cart-item {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-secondary);
+        }
+
+        .cart-item-image {
+            width: 100px;
+            height: 100px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 4px;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-name {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-primary);
+        }
+
+        .cart-item-price {
+            color: var(--accent-primary);
+            font-weight: 900;
+            font-size: 1.1rem;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .qty-btn {
+            background-color: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-primary);
+            width: 35px;
+            height: 35px;
+            border-radius: 2px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .qty-btn:hover {
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .quantity-display {
+            font-weight: 600;
+            min-width: 60px;
+            text-align: center;
+            color: var(--text-primary);
+        }
+
+        .remove-item {
+            background-color: transparent;
+            color: var(--error-color);
+            border: 1px solid var(--error-color);
+            padding: 0.6rem 1rem;
+            border-radius: 2px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .remove-item:hover {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .cart-total {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-primary);
+        }
+
+        .total-price {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--accent-primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            background-color: var(--accent-primary);
+            color: var(--bg-primary);
+            border: none;
+            padding: 1.2rem;
+            border-radius: 2px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+
+        .checkout-btn:hover {
+            background-color: var(--accent-secondary);
+        }
+
+        .checkout-btn:disabled {
+            background-color: var(--border-primary);
+            color: var(--text-tertiary);
+            cursor: not-allowed;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            padding: 3rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: var(--bg-nav);
+            padding: 3rem 0 1rem 0;
+            border-top: 1px solid var(--border-secondary);
+            margin-top: 5rem;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+        }
+
+        .footer-section h3 {
+            font-size: 1.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 1.5rem;
+            color: var(--accent-primary);
+        }
+
+        .footer-section p,
+        .footer-section a {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            line-height: 1.6;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--accent-primary);
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section li {
+            margin-bottom: 0.8rem;
+        }
+
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border-secondary);
+            color: var(--text-tertiary);
+            font-size: 0.8rem;
+        }
+
+        .footer-bottom a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-bottom a:hover {
+            text-decoration: underline;
+        }
+
+        /* Loading Spinner */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border-primary);
+            border-radius: 50%;
+            border-top-color: var(--accent-primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .theme-toggle {
+                right: 10px;
+                width: 50px;
+                height: 50px;
+                font-size: 1.2rem;
+            }
+
+            .hero-title {
+                font-size: 3rem;
+            }
+
+            .page-hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .nav-container {
+                padding: 0 1rem;
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1.5rem;
+            }
+
+            .nav-links a {
+                font-size: 0.8rem;
+            }
+
+            .nav-right {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .products-grid {
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 1.5rem;
+            }
+
+            .product-detail {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .detail-actions {
+                flex-direction: column;
+            }
+
+            .feature-grid,
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .section-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .cart-item {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .auth-container {
+                margin: 1rem;
+                max-width: none;
+            }
+
+            .auth-form-wrapper {
+                padding: 2rem;
+            }
+
+            .auth-forms-container {
+                height: auto;
+                min-height: 450px;
+            }
+
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+    <!-- Theme Toggle Button -->
+    <button class="theme-toggle dark-mode" id="theme-toggle" onclick="toggleTheme()">
+        🌙
+    </button>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo" onclick="showPage('home')">LUPUS</a>
+            <ul class="nav-links">
+                
+            </ul>
+            <div class="nav-right">
+                <div class="user-info" id="user-info">
+                    <span class="user-email" id="user-email"></span>
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+                <div class="auth-buttons" id="auth-buttons">
+                    <button class="auth-btn-nav" onclick="showPage('auth')">Login / Register</button>
+                </div>
+                <div class="cart-wishlist">
+                    <button class="wishlist-btn" onclick="showWishlist()">
+                        Wishlist
+                        <span class="badge" id="wishlist-count">0</span>
+                    </button>
+                    <button class="cart-btn" onclick="showCart()">
+                        Cart
+                        <span class="badge" id="cart-count">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Auth Page with Sliding Forms -->
+    <div id="auth" class="auth-page">
+        <div class="auth-container">
+            <div class="auth-toggle-header">
+                <button class="auth-toggle-btn active" onclick="switchAuthForm('login')" id="login-tab">Login</button>
+                <button class="auth-toggle-btn" onclick="switchAuthForm('register')" id="register-tab">Register</button>
+            </div>
+            
+            <div class="auth-forms-container" id="auth-forms-container">
+                <!-- Login Form -->
+                <div class="auth-form-wrapper login-form">
+                    <h2 class="auth-title">Welcome Back</h2>
+                    <div id="login-error" class="error-message" style="display: none;"></div>
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="login-email">Email</label>
+                            <input type="email" id="login-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" required>
+                        </div>
+                        <button type="submit" class="auth-btn" id="login-submit">
+                            <span class="button-text">Login</span>
+                        </button>
+                    </form>
+                    <div class="auth-links">
+                        <a class="auth-link" onclick="switchAuthForm('forgot')">Forgot Password?</a>
+                    </div>
+                </div>
+
+                <!-- Register Form -->
+                <div class="auth-form-wrapper register-form">
+                    <h2 class="auth-title">Join LUPUS</h2>
+                    <div id="register-error" class="error-message" style="display: none;"></div>
+                    <div id="register-success" class="success-message" style="display: none;"></div>
+                    <form id="register-form">
+                        <div class="form-group">
+                            <label for="register-email">Email</label>
+                            <input type="email" id="register-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="register-password">Password</label>
+                            <input type="password" id="register-password" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="register-confirm">Confirm Password</label>
+                            <input type="password" id="register-confirm" required minlength="6">
+                        </div>
+                        <button type="submit" class="auth-btn" id="register-submit">
+                            <span class="button-text">Register</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Forgot Password Form -->
+                <div class="auth-form-wrapper forgot-form">
+                    <h2 class="auth-title">Reset Password</h2>
+                    <div id="forgot-error" class="error-message" style="display: none;"></div>
+                    <div id="forgot-success" class="success-message" style="display: none;"></div>
+                    <form id="forgot-form">
+                        <div class="form-group">
+                            <label for="forgot-email">Email</label>
+                            <input type="email" id="forgot-email" required>
+                        </div>
+                        <button type="submit" class="auth-btn" id="forgot-submit">
+                            <span class="button-text">Send Reset Email</span>
+                        </button>
+                    </form>
+                    <div class="auth-links">
+                        <a class="auth-link" onclick="switchAuthForm('login')">Back to Login</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Home Page -->
+    <div id="home" class="page active">
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">LUPUS</h1>
+                <p class="hero-subtitle">Premium Dark Fashion</p>
+                <button class="hero-cta" onclick="document.querySelector('.bestsellers-section').scrollIntoView({behavior: 'smooth'})">
+                    Shop Collection
+                </button>
+            </div>
+        </section>
+
+        <!-- Bestsellers Section -->
+        <section class="bestsellers-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Bestsellers</h2>
+                    <button class="view-all-btn" onclick="showPage('men')">View All</button>
+                </div>
+                
+                <div id="auth-required-home" class="auth-required" style="display: none;">
+                    Please <a onclick="showPage('auth')">login</a> to view products and add items to cart.
+                </div>
+                
+                <div class="products-grid" id="products-grid">
+                    <!-- Products will be dynamically loaded here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="stats-section">
+            <div class="container">
+                <div class="stats-content">
+                    <div class="stats-number">150K+</div>
+                    <div class="stats-text">Happy customers and counting :)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature Section -->
+        <section class="feature-section">
+            <div class="container">
+                <div class="feature-grid">
+                    <div class="feature-content">
+                        <h2>Dark Collection</h2>
+                        <p>This is how our premium dark collection stands out in any lighting! Experience the perfect blend of style and quality with our signature pieces.</p>
+                    </div>
+                    <div class="feature-images">
+                        <div class="feature-image" style="background-image: url('https://images.unsplash.com/photo-1441986300917-64674bd600d8?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80')">
+                            <div class="feature-label">Normal</div>
+                        </div>
+                        <div class="feature-image" style="background-image: url('https://images.unsplash.com/photo-1558769132-cb1aea458c5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80')">
+                            <div class="feature-label">Premium</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Testimonials Section -->
+        <section class="testimonials-section">
+            <div class="container">
+                <div class="testimonials-grid">
+                    <div class="testimonial">
+                        <div class="testimonial-text">
+                            "Incredible quality! I am actually a fan of LUPUS and how they are changing the fashion scene. The dark aesthetic is perfect!"
+                        </div>
+                    </div>
+                    <div class="testimonial">
+                        <div class="testimonial-text">
+                            "Absolutely love their quality and the fit. Can't wait for the new collections, especially the premium dark series!"
+                        </div>
+                    </div>
+                    <div class="testimonial">
+                        <div class="testimonial-text">
+                            "Buying again for sure, I just received my order and I seriously didn't expect it to be this good! Amazing work LUPUS!"
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- About Us Page -->
+    <div id="about" class="page">
+        <section class="page-hero">
+            <div class="container">
+                <h1>About LUPUS</h1>
+                <p>Redefining Dark Fashion Since Day One</p>
+            </div>
+        </section>
+        
+        <section class="page-content">
+            <div class="container">
+                <div class="content-grid">
+                    <div class="content-section">
+                        <h2>Our Story</h2>
+                        <p>LUPUS was born from a vision to create premium dark fashion that speaks to the modern rebel. We believe that clothing should be more than just fabric - it should be an expression of your inner strength and individuality.</p>
+                        <p>Founded by passionate designers who understood the gap in the market for authentic dark aesthetic clothing, LUPUS has grown from a small creative collective to a global brand trusted by over 150,000 customers worldwide.</p>
+                        <p>Every piece in our collection is carefully crafted to embody the perfect balance between edgy streetwear and premium quality, ensuring you look and feel your absolute best.</p>
+                    </div>
+                    
+                    <div class="content-section">
+                        <h2>Our Mission</h2>
+                        <p>To empower individuals through premium dark fashion that celebrates uniqueness, rebellion, and authentic self-expression.</p>
+                        
+                        <h2 style="margin-top: 2rem;">What We Stand For</h2>
+                        <ul>
+                            <li>Premium Quality Materials</li>
+                            <li>Sustainable Fashion Practices</li>
+                            <li>Inclusive Sizing & Design</li>
+                            <li>Authentic Dark Aesthetic</li>
+                            <li>Customer-First Approach</li>
+                            <li>Innovation in Streetwear</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 4rem;">
+                    <div class="content-section">
+                        <h2>Why Choose LUPUS?</h2>
+                        <p>We're not just another fashion brand. We're a community of individuals who dare to be different. Our designs are inspired by urban culture, gothic aesthetics, and the raw energy of street fashion.</p>
+                        <p>Each piece undergoes rigorous quality testing to ensure durability, comfort, and style. From our signature oversized hoodies to our statement accessories, every item is designed to make you stand out from the crowd.</p>
+                        <p>Join the LUPUS family and discover what it means to wear your attitude.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Contact Us Page -->
+    <div id="contact" class="page">
+        <section class="page-hero">
+            <div class="container">
+                <h1>Contact Us</h1>
+                <p>Get in Touch with the LUPUS Team</p>
+            </div>
+        </section>
+        
+        <section class="page-content">
+            <div class="container">
+                <div class="content-grid">
+                    <div class="contact-form">
+                        <h2>Send Us a Message</h2>
+                        <form id="contact-form">
+                            <div class="form-group">
+                                <label for="contact-name">Full Name</label>
+                                <input type="text" id="contact-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-email">Email Address</label>
+                                <input type="email" id="contact-email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-subject">Subject</label>
+                                <input type="text" id="contact-subject" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="contact-message">Message</label>
+                                <textarea id="contact-message" placeholder="Tell us how we can help you..." required></textarea>
+                            </div>
+                            <button type="submit" class="submit-btn">Send Message</button>
+                        </form>
+                    </div>
+                    
+                    <div class="content-section">
+                        <h2>Get in Touch</h2>
+                        <p>Have questions about our products, need sizing help, or want to collaborate? We'd love to hear from you!</p>
+                        
+                        <h2 style="margin-top: 2rem;">Contact Information</h2>
+                        <p><strong>Email:</strong> hello@lupusfashion.com</p>
+                        <p><strong>Customer Support:</strong> support@lupusfashion.com</p>
+                        <p><strong>Business Inquiries:</strong> business@lupusfashion.com</p>
+                        <p><strong>Phone:</strong> +1 (555) 123-LUPUS</p>
+                        
+                        <h2 style="margin-top: 2rem;">Business Hours</h2>
+                        <p>Monday - Friday: 9:00 AM - 6:00 PM EST</p>
+                        <p>Saturday: 10:00 AM - 4:00 PM EST</p>
+                        <p>Sunday: Closed</p>
+                        
+                        <h2 style="margin-top: 2rem;">Follow Us</h2>
+                        <p>Stay connected with LUPUS on social media for the latest drops, behind-the-scenes content, and style inspiration.</p>
+                        <p>@lupusfashion on all platforms</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Product Detail Pages -->
+    <div id="product-detail" class="page">
+        <div class="container">
+            <button class="back-btn" onclick="showPage('home')">← Back to Home</button>
+            <div id="product-detail-content">
+                <!-- Product details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Pages -->
+    <div id="men" class="page">
+        <div class="container" style="padding-top: 3rem;">
+            <div class="section-header">
+                <h2 class="section-title">Men's Collection</h2>
+                <p style="color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Premium clothing for the modern man</p>
+            </div>
+            <div id="auth-required-men" class="auth-required" style="display: none;">
+                Please <a onclick="showPage('auth')">login</a> to view products and add items to cart.
+            </div>
+            <div class="products-grid" id="men-products">
+                <!-- Men's products will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="women" class="page">
+        <div class="container" style="padding-top: 3rem;">
+            <div class="section-header">
+                <h2 class="section-title">Women's Collection</h2>
+                <p style="color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Elegant and stylish clothing for women</p>
+            </div>
+            <div id="auth-required-women" class="auth-required" style="display: none;">
+                Please <a onclick="showPage('auth')">login</a> to view products and add items to cart.
+            </div>
+            <div class="products-grid" id="women-products">
+                <!-- Women's products will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <div id="accessories" class="page">
+        <div class="container" style="padding-top: 3rem;">
+            <div class="section-header">
+                <h2 class="section-title">Accessories</h2>
+                <p style="color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Complete your look with our premium accessories</p>
+            </div>
+            <div id="auth-required-accessories" class="auth-required" style="display: none;">
+                Please <a onclick="showPage('auth')">login</a> to view products and add items to cart.
+            </div>
+            <div class="products-grid" id="accessories-products">
+                <!-- Accessories will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Wishlist Page -->
+    <div id="wishlist" class="page">
+        <div class="container" style="padding-top: 3rem;">
+            <div class="section-header">
+                <h2 class="section-title">Your Wishlist</h2>
+                <p style="color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Items you've saved for later</p>
+            </div>
+            <div id="auth-required-wishlist" class="auth-required" style="display: none;">
+                Please <a onclick="showPage('auth')">login</a> to view your wishlist.
+            </div>
+            <div class="products-grid" id="wishlist-products">
+                <!-- Wishlist products will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Cart Modal -->
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Shopping Cart</h2>
+                <button class="close" onclick="closeCart()">&times;</button>
+            </div>
+            <div id="cart-items">
+                <!-- Cart items will be loaded here -->
+            </div>
+            <div class="cart-total" id="cart-total" style="display: none;">
+                <div class="total-price">Total: $<span id="total-amount">0</span></div>
+                <button class="checkout-btn" onclick="checkout()" id="checkout-button">Proceed to Checkout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>LUPUS</h3>
+                <p>Premium dark fashion for the modern rebel. Expressing individuality through authentic streetwear and gothic aesthetics.</p>
+                <p style="margin-top: 1rem; font-size: 0.8rem;">Redefining fashion, one piece at a time.</p>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="#" onclick="showPage('home')">Home</a></li>
+                    <li><a href="#" onclick="showPage('men')">Men's Collection</a></li>
+                    <li><a href="#" onclick="showPage('women')">Women's Collection</a></li>
+                    <li><a href="#" onclick="showPage('accessories')">Accessories</a></li>
+                    <li><a href="#" onclick="showPage('about')">About Us</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Customer Care</h3>
+                <ul>
+                    <li><a href="#" onclick="showPage('contact')">Contact Us</a></li>
+                    <li><a href="#">Size Guide</a></li>
+                    <li><a href="#">Shipping Info</a></li>
+                    <li><a href="#">Returns & Exchanges</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3>Connect</h3>
+                <ul>
+                    <li><a href="#">Instagram</a></li>
+                    <li><a href="#">Twitter</a></li>
+                    <li><a href="#">Facebook</a></li>
+                    <li><a href="#">TikTok</a></li>
+                    <li><a href="#">Newsletter</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; 2024 LUPUS. All rights reserved. | Proudly powered by <a href="#" target="_blank">SPyards</a></p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Firebase Configuration - IMPORTANT: Replace with your actual Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDz9MMqJ1DRDx16nsTaRNvn-WOuUmfcMLI",
+            authDomain: "spyards-c2f0e.firebaseapp.com",
+            projectId: "spyards-c2f0e",
+            storageBucket: "spyards-c2f0e.firebasestorage.app",
+            messagingSenderId: "323880052018",
+            appId: "1:323880052018:web:5ec03e07e2e59c1884a32b",
+            measurementId: "G-098D2N7XJX"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Theme Management
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.getElementById('theme-toggle');
+            const currentTheme = body.getAttribute('data-theme');
+            
+            if (currentTheme === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                themeToggle.textContent = '☀️';
+                themeToggle.className = 'theme-toggle light-mode';
+                localStorage.setItem('theme', 'light');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeToggle.textContent = '🌙';
+                themeToggle.className = 'theme-toggle dark-mode';
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Initialize theme from localStorage or default to dark
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            const body = document.body;
+            const themeToggle = document.getElementById('theme-toggle');
+            
+            body.setAttribute('data-theme', savedTheme);
+            
+            if (savedTheme === 'light') {
+                themeToggle.textContent = '☀️';
+                themeToggle.className = 'theme-toggle light-mode';
+            } else {
+                themeToggle.textContent = '🌙';
+                themeToggle.className = 'theme-toggle dark-mode';
+            }
+        }
+
+        // Sample product data - Updated with more street-style fashion names
+        const products = [
+            {
+                id: 1,
+                name: "Shadow Black Oversized Hoodie",
+                price: 129.99,
+                category: "men",
+                image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                description: "Premium oversized hoodie in deep black. Perfect for streetwear and urban fashion. Made with high-quality cotton blend for ultimate comfort and durability."
+            },
+            {
+                id: 2,
+                name: "Dark Gothic Reflective Tee",
+                price: 89.99,
+                category: "women",
+                image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                description: "Stunning reflective gothic tee that changes in different lighting. Perfect for evening events and making a statement."
+            },
+            {
+                id: 3,
+                name: "Urban Distressed Denim",
+                price: 159.99,
+                category: "men",
+                image: "https://images.unsplash.com/photo-1542272604-787c3835535d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                description: "Premium distressed denim with urban cuts. A wardrobe essential for the modern streetwear enthusiast."
+            },
+            {
+                id: 4,
+                name: "Midnight Crop Top",
+                price: 75.99,
+                category: "women",
+                image: "https://images.unsplash.com/photo-1503342452485-86b7f54527ef?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                description: "Edgy midnight black crop top with unique cut details. Perfect for layering and dark aesthetic looks."
+            },
+            {
+                id: 5,
+                name: "Skull Chain Necklace",
+                price: 199.99,
+                category: "accessories",
+                image: "https://images.unsplash.com/photo-1506629905607-45bc0c1d4a7b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                description: "Premium skull chain necklace with dark metallic finish. A perfect accessory for completing your dark aesthetic."
+            },
+            {
+                id: 6,
+                name: "Shadow Leather Bag",
+                price: 249.99,
+                category: "accessories",
+                image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                description: "Premium black leather bag with gothic hardware. Multiple compartments for everyday dark fashion needs."
+            },
+            {
+                id: 7,
+                name: "Blackout Platform Boots",
+                price: 189.99,
+                category: "men",
+                image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                description: "Statement platform boots in matte black. Perfect for adding height and attitude to any dark outfit."
+            },
+            {
+                id: 8,
+                name: "Mystic Dark Bandana",
+                price: 45.99,
+                category: "accessories",
+                image: "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                description: "Luxurious dark bandana with mystical patterns. Adds the perfect finishing touch to any gothic ensemble."
+            },
+            {
+                id: 9,
+                name: "Void Black Cargo Pants",
+                price: 139.99,
+                category: "men",
+                image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                description: "Tactical-inspired cargo pants in deep black. Multiple pockets and urban design for the modern dark fashion enthusiast."
+            },
+            {
+                id: 10,
+                name: "Raven Wing Dress",
+                price: 199.99,
+                category: "women",
+                image: "https://images.unsplash.com/photo-1539008835657-9e8e9680c956?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80",
+                description: "Flowing black dress with dramatic wing-inspired sleeves. Perfect for gothic formal occasions and dark elegance."
+            }
+        ];
+
+        // Global variables
+        let cart = [];
+        let wishlist = [];
+        let currentPage = 'home';
+        let currentUser = null;
+        let currentAuthForm = 'login';
+
+        // Authentication state observer
+        auth.onAuthStateChanged((user) => {
+            currentUser = user;
+            updateAuthUI();
+            if (user) {
+                loadUserData();
+                loadProducts();
+            } else {
+                showAuthRequired();
+            }
+        });
+
+        // Switch between auth forms
+        function switchAuthForm(formType) {
+            const container = document.getElementById('auth-forms-container');
+            const loginTab = document.getElementById('login-tab');
+            const registerTab = document.getElementById('register-tab');
+            
+            // Clear all messages
+            document.getElementById('login-error').style.display = 'none';
+            document.getElementById('register-error').style.display = 'none';
+            document.getElementById('register-success').style.display = 'none';
+            document.getElementById('forgot-error').style.display = 'none';
+            document.getElementById('forgot-success').style.display = 'none';
+            
+            // Reset all forms
+            document.getElementById('login-form').reset();
+            document.getElementById('register-form').reset();
+            document.getElementById('forgot-form').reset();
+            
+            // Update tabs
+            loginTab.classList.remove('active');
+            registerTab.classList.remove('active');
+            
+            // Remove all classes
+            container.classList.remove('show-register', 'show-forgot');
+            
+            currentAuthForm = formType;
+            
+            if (formType === 'register') {
+                container.classList.add('show-register');
+                registerTab.classList.add('active');
+            } else if (formType === 'forgot') {
+                container.classList.add('show-forgot');
+                // Don't show any tab as active for forgot password
+            } else {
+                loginTab.classList.add('active');
+            }
+        }
+
+        // Update authentication UI
+        function updateAuthUI() {
+            const userInfo = document.getElementById('user-info');
+            const authButtons = document.getElementById('auth-buttons');
+            const userEmail = document.getElementById('user-email');
+
+            if (currentUser) {
+                userInfo.style.display = 'flex';
+                authButtons.style.display = 'none';
+                userEmail.textContent = currentUser.email;
+            } else {
+                userInfo.style.display = 'none';
+                authButtons.style.display = 'flex';
+            }
+        }
+
+        // Show auth required messages
+        function showAuthRequired() {
+            const authRequiredElements = [
+                'auth-required-home',
+                'auth-required-men',
+                'auth-required-women',
+                'auth-required-accessories',
+                'auth-required-wishlist'
+            ];
+
+            authRequiredElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.style.display = 'block';
+                }
+            });
+
+            // Hide product grids
+            const productGrids = [
+                'products-grid',
+                'men-products',
+                'women-products',
+                'accessories-products',
+                'wishlist-products'
+            ];
+
+            productGrids.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.innerHTML = '';
+                }
+            });
+        }
+
+        // Hide auth required messages
+        function hideAuthRequired() {
+            const authRequiredElements = [
+                'auth-required-home',
+                'auth-required-men',
+                'auth-required-women',
+                'auth-required-accessories',
+                'auth-required-wishlist'
+            ];
+
+            authRequiredElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.style.display = 'none';
+                }
+            });
+        }
+
+        // Load user data from localStorage (simulating database)
+        function loadUserData() {
+            if (!currentUser) return;
+            
+            const userCart = JSON.parse(localStorage.getItem(`cart_${currentUser.uid}`) || '[]');
+            const userWishlist = JSON.parse(localStorage.getItem(`wishlist_${currentUser.uid}`) || '[]');
+            
+            cart = userCart;
+            wishlist = userWishlist;
+            
+            updateCartCount();
+            updateWishlistCount();
+        }
+
+        // Save user data to localStorage (simulating database)
+        function saveUserData() {
+            if (!currentUser) return;
+            
+            localStorage.setItem(`cart_${currentUser.uid}`, JSON.stringify(cart));
+            localStorage.setItem(`wishlist_${currentUser.uid}`, JSON.stringify(wishlist));
+        }
+
+        // Login function
+        async function login(email, password) {
+            try {
+                const result = await auth.signInWithEmailAndPassword(email, password);
+                showPage('home');
+                return { success: true, user: result.user };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Register function
+        async function register(email, password) {
+            try {
+                const result = await auth.createUserWithEmailAndPassword(email, password);
+                return { success: true, user: result.user };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+ 
+        // Forgot password function - FIXED VERSION
+        async function forgotPassword(email) {
+            try {
+                // Updated to use the correct Firebase Auth method with proper action code settings
+                const actionCodeSettings = {
+                    url: 'https://lupus.spyards.com', // This ensures the reset link redirects back to your site
+                    handleCodeInApp: false,
+                };
+                
+                await auth.sendPasswordResetEmail(email, actionCodeSettings);
+                return { success: true };
+            } catch (error) {
+                console.error('Password reset error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            try {
+                await auth.signOut();
+                cart = [];
+                wishlist = [];
+                updateCartCount();
+                updateWishlistCount();
+                showPage('home');
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        }
+
+        // Form handlers
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            const submitBtn = document.getElementById('login-submit');
+            const errorDiv = document.getElementById('login-error');
+            
+            // Show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="loading"></div>';
+            errorDiv.style.display = 'none';
+            
+            const result = await login(email, password);
+            
+            if (result.success) {
+                // Clear form
+                document.getElementById('login-form').reset();
+            } else {
+                errorDiv.textContent = result.error;
+                errorDiv.style.display = 'block';
+            }
+            
+            // Reset button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="button-text">Login</span>';
+        });
+
+        document.getElementById('register-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirmPassword = document.getElementById('register-confirm').value;
+            const submitBtn = document.getElementById('register-submit');
+            const errorDiv = document.getElementById('register-error');
+            const successDiv = document.getElementById('register-success');
+            
+            // Hide messages
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                errorDiv.textContent = 'Passwords do not match';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="loading"></div>';
+            
+            const result = await register(email, password);
+            
+            if (result.success) {
+                successDiv.textContent = 'Registration successful! You are now logged in.';
+                successDiv.style.display = 'block';
+                document.getElementById('register-form').reset();
+                
+                // Redirect to home after a delay
+                setTimeout(() => {
+                    showPage('home');
+                }, 2000);
+            } else {
+                errorDiv.textContent = result.error;
+                errorDiv.style.display = 'block';
+            }
+            
+            // Reset button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="button-text">Register</span>';
+        });
+
+        document.getElementById('forgot-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('forgot-email').value;
+            const submitBtn = document.getElementById('forgot-submit');
+            const errorDiv = document.getElementById('forgot-error');
+            const successDiv = document.getElementById('forgot-success');
+            
+            // Hide messages
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            // Show loading
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<div class="loading"></div>';
+            
+            const result = await forgotPassword(email);
+            
+            if (result.success) {
+                successDiv.textContent = 'Password reset email sent! Please check your inbox and spam folder.';
+                successDiv.style.display = 'block';
+                document.getElementById('forgot-form').reset();
+            } else {
+                errorDiv.textContent = result.error;
+                errorDiv.style.display = 'block';
+            }
+            
+            // Reset button
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<span class="button-text">Send Reset Email</span>';
+        });
+
+        // Contact form handler
+        document.getElementById('contact-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('contact-name').value;
+            const email = document.getElementById('contact-email').value;
+            const subject = document.getElementById('contact-subject').value;
+            const message = document.getElementById('contact-message').value;
+            
+            // Simulate form submission
+            alert(`Thank you for your message, ${name}!\n\nWe'll get back to you at ${email} within 24 hours.\n\nSubject: ${subject}\n\nThis is a demo contact form. In a real application, this would send an email to LUPUS support.`);
+            
+            // Reset form
+            document.getElementById('contact-form').reset();
+        });
+
+        // Initialize the website
+        function init() {
+            initTheme(); // Initialize theme first
+            updateCartCount();
+            updateWishlistCount();
+            // Set initial auth form
+            switchAuthForm('login');
+        }
+
+        // Load products into grids
+        function loadProducts() {
+            if (!currentUser) {
+                showAuthRequired();
+                return;
+            }
+
+            hideAuthRequired();
+            
+            const homeGrid = document.getElementById('products-grid');
+            const menGrid = document.getElementById('men-products');
+            const womenGrid = document.getElementById('women-products');
+            const accessoriesGrid = document.getElementById('accessories-products');
+
+            // Clear existing content
+            homeGrid.innerHTML = '';
+            menGrid.innerHTML = '';
+            womenGrid.innerHTML = '';
+            accessoriesGrid.innerHTML = '';
+
+            // Show first 6 products on home page
+            const homeProducts = products.slice(0, 6);
+            homeProducts.forEach(product => {
+                const productCard = createProductCard(product);
+                homeGrid.appendChild(productCard);
+            });
+
+            // Load category products
+            products.forEach(product => {
+                const productCard = createProductCard(product);
+                
+                if (product.category === 'men') {
+                    menGrid.appendChild(productCard.cloneNode(true));
+                } else if (product.category === 'women') {
+                    womenGrid.appendChild(productCard.cloneNode(true));
+                } else if (product.category === 'accessories') {
+                    accessoriesGrid.appendChild(productCard.cloneNode(true));
+                }
+            });
+
+            // Add event listeners to all cards
+            addProductCardListeners();
+        }
+
+        // Create product card HTML
+        function createProductCard(product) {
+            const card = document.createElement('div');
+            card.className = 'product-card';
+            card.setAttribute('data-product-id', product.id);
+            
+            const isLoggedIn = !!currentUser;
+            const isWishlisted = wishlist.some(item => item.id === product.id);
+            
+            card.innerHTML = `
+                <div class="product-image" style="background-image: url('${product.image}')">
+                    <button class="wishlist-heart ${!isLoggedIn ? 'disabled' : ''}" 
+                            onclick="toggleWishlist(${product.id})" 
+                            data-product-id="${product.id}"
+                            ${!isLoggedIn ? 'disabled' : ''}>
+                        ${isWishlisted ? '♥' : '♡'}
+                    </button>
+                </div>
+                <div class="product-info">
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-price">${product.price}</div>
+                    <button class="add-to-cart ${!isLoggedIn ? 'disabled' : ''}" 
+                            onclick="addToCart(${product.id})"
+                            ${!isLoggedIn ? 'disabled' : ''}>
+                        ${isLoggedIn ? 'Add to Cart' : 'Login Required'}
+                    </button>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Add event listeners to product cards
+        function addProductCardListeners() {
+            document.querySelectorAll('.product-card').forEach(card => {
+                card.addEventListener('click', (e) => {
+                    // Don't redirect if clicking on buttons
+                    if (e.target.tagName === 'BUTTON') return;
+                    
+                    const productId = parseInt(card.getAttribute('data-product-id'));
+                    showProductDetail(productId);
+                });
+            });
+        }
+
+        // Show product detail page
+        function showProductDetail(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const detailContent = document.getElementById('product-detail-content');
+            const isLoggedIn = !!currentUser;
+            const isWishlisted = wishlist.some(item => item.id === product.id);
+            
+            detailContent.innerHTML = `
+                <div class="product-detail">
+                    <div class="product-detail-image" style="background-image: url('${product.image}')"></div>
+                    <div class="product-detail-info">
+                        <h1>${product.name}</h1>
+                        <div class="price">${product.price}</div>
+                        <div class="product-description">${product.description}</div>
+                        
+                        ${isLoggedIn ? `
+                        <div class="size-selector">
+                            <h3>Select Size:</h3>
+                            <div class="size-options">
+                                <button class="size-option" onclick="selectSize(this)">S</button>
+                                <button class="size-option selected" onclick="selectSize(this)">M</button>
+                                <button class="size-option" onclick="selectSize(this)">L</button>
+                                <button class="size-option" onclick="selectSize(this)">XL</button>
+                            </div>
+                        </div>
+                        
+                        <div class="detail-actions">
+                            <button class="detail-add-to-cart" onclick="addToCart(${product.id})">Add to Cart</button>
+                            <button class="detail-wishlist ${isWishlisted ? 'active' : ''}" onclick="toggleWishlist(${product.id})">
+                                ${isWishlisted ? '♥ Remove' : '♡ Wishlist'}
+                            </button>
+                        </div>
+                        ` : `
+                        <div class="auth-required">
+                            Please <a onclick="showPage('auth')">login</a> to purchase this item.
+                        </div>
+                        `}
+                    </div>
+                </div>
+            `;
+            
+            showPage('product-detail');
+        }
+
+        // Select size function
+        function selectSize(button) {
+            document.querySelectorAll('.size-option').forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
+        }
+
+        // Show page function
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page, .auth-page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+                currentPage = pageId;
+            }
+            
+            // Load appropriate content based on page and auth status
+            if (pageId === 'wishlist') {
+                loadWishlist();
+            } else if (['home', 'men', 'women', 'accessories'].includes(pageId)) {
+                if (currentUser) {
+                    loadProducts();
+                } else {
+                    showAuthRequired();
+                }
+            }
+        }
+
+        // Add to cart function
+        function addToCart(productId) {
+            if (!currentUser) {
+                showPage('auth');
+                return;
+            }
+
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    ...product,
+                    quantity: 1,
+                    size: 'M' // Default size
+                });
+            }
+            
+            updateCartCount();
+            saveUserData();
+            
+            // Show feedback
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Added!';
+            button.style.backgroundColor = 'var(--accent-primary)';
+            button.style.color = 'var(--bg-primary)';
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.backgroundColor = 'transparent';
+                button.style.color = 'var(--text-primary)';
+            }, 1000);
+        }
+
+        // Toggle wishlist function
+        function toggleWishlist(productId) {
+            if (!currentUser) {
+                showPage('auth');
+                return;
+            }
+
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const existingIndex = wishlist.findIndex(item => item.id === productId);
+            
+            if (existingIndex > -1) {
+                wishlist.splice(existingIndex, 1);
+            } else {
+                wishlist.push(product);
+            }
+            
+            updateWishlistCount();
+            updateWishlistButtons(productId);
+            saveUserData();
+            
+            // Reload wishlist page if currently viewing it
+            if (currentPage === 'wishlist') {
+                loadWishlist();
+            }
+        }
+
+        // Update wishlist buttons
+        function updateWishlistButtons(productId) {
+            const isWishlisted = wishlist.some(item => item.id === productId);
+            
+            // Update heart buttons in product cards
+            document.querySelectorAll(`[data-product-id="${productId}"]`).forEach(button => {
+                if (button.classList.contains('wishlist-heart')) {
+                    button.textContent = isWishlisted ? '♥' : '♡';
+                    if (isWishlisted) {
+                        button.classList.add('active');
+                    } else {
+                        button.classList.remove('active');
+                    }
+                }
+            });
+            
+            // Update detail page wishlist button
+            const detailButton = document.querySelector('.detail-wishlist');
+            if (detailButton) {
+                detailButton.textContent = isWishlisted ? '♥ Remove' : '♡ Wishlist';
+                if (isWishlisted) {
+                    detailButton.classList.add('active');
+                } else {
+                    detailButton.classList.remove('active');
+                }
+            }
+        }
+
+        // Load wishlist page
+        function loadWishlist() {
+            const wishlistGrid = document.getElementById('wishlist-products');
+            const authRequired = document.getElementById('auth-required-wishlist');
+            
+            if (!currentUser) {
+                authRequired.style.display = 'block';
+                wishlistGrid.innerHTML = '';
+                return;
+            }
+            
+            authRequired.style.display = 'none';
+            wishlistGrid.innerHTML = '';
+            
+            if (wishlist.length === 0) {
+                wishlistGrid.innerHTML = '<div class="empty-message">Your wishlist is empty</div>';
+                return;
+            }
+            
+            wishlist.forEach(product => {
+                const productCard = createProductCard(product);
+                wishlistGrid.appendChild(productCard);
+            });
+            
+            addProductCardListeners();
+        }
+
+        // Show wishlist
+        function showWishlist() {
+            if (!currentUser) {
+                showPage('auth');
+                return;
+            }
+            showPage('wishlist');
+        }
+
+        // Show cart modal
+        function showCart() {
+            if (!currentUser) {
+                showPage('auth');
+                return;
+            }
+
+            const modal = document.getElementById('cart-modal');
+            const cartItems = document.getElementById('cart-items');
+            const cartTotal = document.getElementById('cart-total');
+            
+            cartItems.innerHTML = '';
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<div class="empty-message">Your cart is empty</div>';
+                cartTotal.style.display = 'none';
+            } else {
+                cart.forEach(item => {
+                    const cartItem = document.createElement('div');
+                    cartItem.className = 'cart-item';
+                    cartItem.innerHTML = `
+                        <div class="cart-item-image" style="background-image: url('${item.image}')"></div>
+                        <div class="cart-item-info">
+                            <div class="cart-item-name">${item.name}</div>
+                            <div class="cart-item-price">${item.price}</div>
+                            <div class="quantity-controls">
+                                <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
+                                <span class="quantity-display">Qty: ${item.quantity}</span>
+                                <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)">+</button>
+                            </div>
+                        </div>
+                        <button class="remove-item" onclick="removeFromCart(${item.id})">Remove</button>
+                    `;
+                    cartItems.appendChild(cartItem);
+                });
+                
+                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                document.getElementById('total-amount').textContent = total.toFixed(2);
+                cartTotal.style.display = 'block';
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        // Close cart modal
+        function closeCart() {
+            document.getElementById('cart-modal').style.display = 'none';
+        }
+
+        // Update quantity in cart
+        function updateQuantity(productId, change) {
+            if (!currentUser) return;
+
+            const item = cart.find(item => item.id === productId);
+            if (!item) return;
+            
+            item.quantity += change;
+            
+            if (item.quantity <= 0) {
+                removeFromCart(productId);
+            } else {
+                updateCartCount();
+                saveUserData();
+                showCart(); // Refresh cart display
+            }
+        }
+
+        // Remove item from cart
+        function removeFromCart(productId) {
+            if (!currentUser) return;
+
+            cart = cart.filter(item => item.id !== productId);
+            updateCartCount();
+            saveUserData();
+            showCart(); // Refresh cart display
+        }
+
+        // Update cart count badge
+        function updateCartCount() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cart-count').textContent = count;
+        }
+
+        // Update wishlist count badge
+        function updateWishlistCount() {
+            document.getElementById('wishlist-count').textContent = wishlist.length;
+        }
+
+        // Checkout function
+        function checkout() {
+            if (!currentUser) {
+                showPage('auth');
+                return;
+            }
+
+            if (cart.length === 0) return;
+            
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            alert(`Thank you for choosing LUPUS! Total: ${total.toFixed(2)}\n\nThis is a demo checkout. In a real store, you would be redirected to a payment processor.`);
+            
+            // Clear cart after checkout
+            cart = [];
+            updateCartCount();
+            saveUserData();
+            closeCart();
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('cart-modal');
+            if (event.target === modal) {
+                closeCart();
+            }
+        }
+
+        // Initialize the website when page loads
+        document.addEventListener('DOMContentLoaded', init);
+
+        // Firebase Configuration Notice
+        console.log('🔥 FIREBASE SETUP REQUIRED:');
+        console.log('1. Create a Firebase project at https://console.firebase.google.com');
+        console.log('2. Enable Authentication with Email/Password');
+        console.log('3. Replace the firebaseConfig object with your actual project credentials');
+        console.log('4. The current config is a placeholder and will not work');
+        console.log('5. Make sure to configure authorized domains in Firebase Auth settings');
+        
+        // Theme toggle notice
+        console.log('🌗 THEME TOGGLE FEATURES:');
+        console.log('• Dark mode is set as default');
+        console.log('• Click the floating button on the right to toggle between dark/light modes');
+        console.log('• Theme preference is saved in localStorage');
+        console.log('• All colors automatically adapt using CSS custom properties');
+    </script>
+</body>
+</html>
